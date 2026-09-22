@@ -1,2 +1,21 @@
 # macOS
 .DS_Store
+
+# Maven
+target/
+
+# Idea files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Python files
+.venv/
+
+# Precompiled classes
+**/**.class
+
+# Archieves
+**/**.7z
+**/**.zip
