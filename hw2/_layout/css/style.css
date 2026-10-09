@@ -3,6 +3,7 @@
     --border-radius: 6px;
     --black-color: #333;
     --caption-color: #3B5998;
+    --small-font-size: 0.85rem;
     color: var(--black-color);
     font-family: Verdana, sans-serif;
     font-size: 16px;
@@ -68,6 +69,16 @@ header nav ul li a {
     text-transform: uppercase;
 }
 
+header nav .search {
+    float: right;
+    transform: translateY(-90%);
+}
+
+header nav .search input {
+    border: 1px solid var(--border-color);
+    background: #f5f5f5 url("../img/search-16x16.png") no-repeat left;
+}
+
 .middle {
     margin-top: 1rem;
     overflow: auto;
@@ -87,6 +98,164 @@ footer {
     border-top: 1px solid var(--border-color);
     padding-top: 0.5rem;
     text-align: center;
+}
+
+.datatable .caption {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    background: rgb(225, 225, 225);
+    color: rgb(35, 35, 35);
+}
+
+.datatable table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.datatable th {
+  border: 1px solid #ddd;
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+}
+
+.datatable td {
+    border: 1px solid #ddd;
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+}
+
+.datatable tbody tr:nth-child(2n-1) {
+    background: rgb(248, 248, 248);
+}
+
+article .title {
+    color: var(--caption-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+article .information {
+    margin: 0.25rem 0 0.75rem;
+    color: #848484;
+    font-size: var(--small-font-size);
+}
+
+article .body {
+    position: relative;
+    border-left: 4px solid var(--border-color);
+    padding-left: 1em;
+}
+
+article .body p {
+    margin: 0 0 1em;
+}
+
+article .body p:last-child {
+    margin-bottom: 0;
+}
+
+article .attachment {
+    margin: 0.5rem 0;
+    padding: 0;
+    color: #848484;
+    font-size: var(--small-font-size);
+}
+
+article .attachment li {
+    min-height: 1.2rem;
+    padding-left: 1.25rem;
+    background: url("../img/paperclip-16x16.png") no-repeat left;
+}
+
+article .footer {
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0.75rem;
+    font-size: var(--small-font-size);
+}
+
+article .footer .left {
+    float: left;
+}
+article .footer .right {
+    float: right;
+}
+article .footer img {
+    vertical-align: middle;
+}
+article .positive-score {
+    color: green;
+    font-size: larger;
+    font-weight: bold;
+}
+
+.login-form-box {
+    box-sizing: border-box;
+    width: 30rem;
+    margin: 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.login-form-box .header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.25rem 0.5rem;
+    color: var(--caption-color);
+    font-weight: bold;
+}
+
+.login-form-box .body {
+    --field-left-margin: 45%;
+    padding: 1rem;
+}
+.login-form-box .field {
+    position: relative;
+    min-height: 3rem;
+}
+.login-form-box .name {
+    position: absolute;
+    top: 0.2rem;
+    width: 40%;
+    text-align: right;
+}
+.login-form-box .value {
+    margin-left: var(--field-left-margin);
+}
+.login-form-box .value input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 1.5rem;
+}
+.login-form-box .error {
+    margin-left: var(--field-left-margin);
+    color: red;
+    font-size: var(--small-font-size);
+}
+.login-form-box .checkbox-field {
+    margin: 3% 0 7% var(--field-left-margin);
+    font-size: var(--small-font-size);
+}
+.login-form-box .button-field {
+    margin-left: var(--field-left-margin);
+}
+.login-form-box .button-field input {
+    width: 6rem;
+}
+.login-form-box .links {
+        margin: 0 0 0 var(--field-left-margin);
+        text-align: right;
+        font-size: var(--small-font-size);
+}
+.login-form-box .footer {
+    border-top: 1px solid var(--border-color);
+    padding: 0.25rem;
+    text-align: right;
+    font-size: 0.8rem;
+}
+
+.login-form-box .footer a {
+    margin-left: 1rem;
 }
 
 aside section {
