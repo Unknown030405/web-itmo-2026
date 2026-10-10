@@ -61,8 +61,7 @@ public class CaptchaFilter extends HttpFilter {
             }
 
             if (correct) {
-                String location = request.getRequestURI();
-                response.sendRedirect(location);
+                response.sendRedirect(request.getRequestURI());
             } else {
                 showCaptcha(response, nextAnswer, true);
             }
