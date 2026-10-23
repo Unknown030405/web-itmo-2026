@@ -1,12 +1,5 @@
 <#import "./common.ftlh" as c>
-
 <@c.page>
-    <ul>
-        <#list users as u>
-            <li>
-                <#if user?? && user.id == u.id>*</#if>
-                <@c.userlink u/>
-            </li>
-        </#list>
-    </ul>
+    <h1>Recent posts</h1>
+    <#list posts?reverse as post><@c.post post/></#list>
 </@c.page>

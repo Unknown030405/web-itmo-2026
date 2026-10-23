@@ -18,6 +18,7 @@ public class FreemarkerServlet extends HttpServlet {
     private static final String UTF_8 = StandardCharsets.UTF_8.name();
     private static final String DEBUG_TEMPLATES_PATH = "../../src/main/webapp/WEB-INF/templates";
     private static final String TEMPLATES_PATH = "/WEB-INF/templates";
+    private static final String TEMPLATE_404 = "/404.ftlh";
 
     private final Configuration freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_31);
 
@@ -35,6 +36,7 @@ public class FreemarkerServlet extends HttpServlet {
         }
 
         freemarkerConfiguration.setDefaultEncoding(UTF_8);
+        freemarkerConfiguration.setURLEscapingCharset(UTF_8);
         freemarkerConfiguration.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
         freemarkerConfiguration.setLogTemplateExceptions(false);
         freemarkerConfiguration.setWrapUncheckedExceptions(true);
@@ -46,12 +48,23 @@ public class FreemarkerServlet extends HttpServlet {
         request.setCharacterEncoding(UTF_8);
         response.setCharacterEncoding(UTF_8);
 
-        Template template;
-        try {
-            template = freemarkerConfiguration.getTemplate(URLDecoder.decode(request.getRequestURI(), UTF_8) + ".ftlh");
-        } catch (TemplateNotFoundException ignored) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        String path = request.getRequestURI();
+        if (path.isEmpty() || "/".equals(path)) {
+            response.sendRedirect(request.getContextPath() + "/index");
             return;
+        }
+
+        Template template = null;
+        try {
+            String decodedPath = URLDecoder.decode(path, UTF_8);
+            if (decodedPath.matches("/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*")) {
+                template = freemarkerConfiguration.getTemplate(decodedPath + ".ftlh");
+            }
+        } catch (TemplateNotFoundException | IllegalArgumentException ignored) {}
+
+        if (template == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            template = freemarkerConfiguration.getTemplate(TEMPLATE_404);
         }
 
         Map<String, Object> data = getData(request);
@@ -70,7 +83,14 @@ public class FreemarkerServlet extends HttpServlet {
 
         for (Map.Entry<String, String[]> e : request.getParameterMap().entrySet()) {
             if (e.getValue() != null && e.getValue().length == 1) {
-                data.put(e.getKey(), e.getValue()[0]);
+                String value = e.getValue()[0];
+                if (e.getKey().endsWith("_id")) {
+                    try {
+                        data.put(e.getKey(), Long.parseLong(value));
+                        continue;
+                    } catch (NumberFormatException ignored) {}
+                }
+                data.put(e.getKey(), value);
             }
         }
 

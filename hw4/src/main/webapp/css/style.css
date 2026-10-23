@@ -111,3 +111,72 @@ footer {
     border-top: var(--boder);
     text-align: center;
 }
+header nav ul li a.active {
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+}
+
+.user-link {
+    text-decoration: none;
+    font-size: 1.05em;
+}
+
+.user-link .user-name {
+    color: #333;
+}
+
+.user-link.name-only {
+    font-size: 1em;
+    text-decoration: underline;
+    color: #1464a4;
+}
+
+.user-link.name-only .user-name { color: inherit; }
+.user-handle { font-weight: bold; }
+.color-red { color: #c52222; }
+.color-green { color: #168238; }
+.color-blue { color: #2758c5; }
+
+.post {
+    margin: 0 0 1.5rem;
+    border: var(--boder);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.post .title {
+    margin: 0;
+    padding: 0.65rem 0.8rem 0.3rem;
+    font-size: 1.25rem;
+    color: var(--caption-color);
+}
+
+.post .title a { color: inherit; text-decoration: none; }
+.post .title a:hover { text-decoration: underline; }
+.post .information { padding: 0 0.8rem 0.5rem; color: #666; font-size: 0.85rem; }
+.post .body { padding: 0 0.8rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.post .body p { margin: 0.3rem 0 0.8rem; }
+.post-footer { border-top: var(--boder); padding: 0.45rem 0.8rem; text-align: right; font-size: 0.85rem; }
+
+aside .body { line-height: 1.35; overflow-wrap: anywhere; }
+
+a { color: #1464a4; }
+
+.datatable { border: var(--boder); border-radius: var(--border-radius); overflow: hidden; }
+.datatable .caption { background: #e5eaf2; color: var(--caption-color); font-weight: bold; padding: 0.6rem; }
+.datatable table { border-collapse: collapse; width: 100%; text-align: left; }
+.datatable th, .datatable td { padding: 0.55rem; border-top: var(--boder); }
+.datatable th { background: #f4f6fa; }
+.datatable tbody tr:nth-child(even) { background: #f8f9fc; }
+
+.profile-arrows { display: flex; gap: 0.45rem; margin-top: 0.65rem; font-size: 1.5rem; }
+.profile-arrows a, .profile-arrows span { display: inline-block; width: 2rem; text-align: center; }
+.profile-arrows a { text-decoration: none; }
+.profile-arrows .disabled { color: #aaa; }
+
+.profile { display: flex; justify-content: space-between; gap: 1.2rem; align-items: flex-start; padding: 1rem; border: var(--boder); border-radius: var(--border-radius); }
+.profile .avatar { width: 12rem; height: 12rem; object-fit: cover; border: var(--boder); border-radius: var(--border-radius); }
+.profile-name { margin-top: 0.25rem; font-size: 1.4rem; }
+.profile-details p { margin: 0.8rem 0; }
+.not-found { padding: 0.5rem 0; }
+.not-found h1 { font-size: 2.5rem; margin: 0.4rem 0 1rem; }
