@@ -153,7 +153,27 @@ public class FrontServlet extends HttpServlet {
             }
         }
 
-        Template template = newTemplate(pageClass.getSimpleName() + ".ftlh");
+        String lang = request.getParameter("lang");
+        if (lang != null && validateLang(lang)) {
+            request.getSession().setAttribute("lang", lang);
+        } else {
+            if (lang != null) {
+                getServletContext().log("Invalid value for parameter [lang=" + lang + "]");
+            }
+            lang = (String) request.getSession().getAttribute("lang");
+        }
+
+        Template template = null;
+        try {
+            String suffix = "en".equals(lang) ? "" : "_" + lang;
+            template = newTemplate(pageClass.getSimpleName() + suffix + ".ftlh");
+        } catch (ServletException e) {
+            getServletContext().log(e.getMessage(), e);
+        } finally {
+            if (template == null) {
+                template = newTemplate(pageClass.getSimpleName() + ".ftlh");
+            }
+        }
         response.setContentType("text/html");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         try {
@@ -164,6 +184,10 @@ public class FrontServlet extends HttpServlet {
                         + pageClass + ", action=" + method + "]", e);
             }
         }
+    }
+
+    private boolean validateLang(String lang) {
+        return lang.length() == 2 && lang.chars().allMatch(Character::isLowerCase);
     }
 
     private Template newTemplate(String templateName) throws ServletException {
