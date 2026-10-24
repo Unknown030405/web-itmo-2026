@@ -4,20 +4,20 @@
 <@c.page>
     <h1>Tic-Tac-Toe</h1>
 
+    <#assign phase=state.phase/>
+
     <#list 0..state.size-1 as row>
         <div class="tictactoe-row">
             <#list 0..state.size-1 as col>
                 <form class="tictactoe-form" method="post">
                     <input type="hidden" name="action" value="onMove">
-                    <input type="submit" <#if state.cells[row][col]?has_content>disabled</#if>
+                    <input type="submit" <#if phase!="RUNNING" || state.cells[row][col]?has_content>disabled</#if>
                            class="tictactoe-cell"
                            name="cell_${row}${col}" value="${state.cells[row][col]!" "}">
                 </form>
             </#list>
         </div>
     </#list>
-
-    <#assign phase=state.phase/>
 
     <div class="tictactoe-message">
         <#if phase=="RUNNING">

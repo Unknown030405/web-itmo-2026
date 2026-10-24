@@ -15,10 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FrontServlet extends HttpServlet {
@@ -96,10 +93,20 @@ public class FrontServlet extends HttpServlet {
 
         Method method = null;
         for (Class<?> clazz = pageClass; method == null && clazz != null; clazz = clazz.getSuperclass()) {
-            try {
-                method = clazz.getDeclaredMethod(route.getAction(), HttpServletRequest.class, Map.class);
-            } catch (NoSuchMethodException ignored) {
-                // No operations.
+            for (Method innerMethod : clazz.getDeclaredMethods()) {
+                if (innerMethod.getName().equals(route.getAction())) {
+                    method = innerMethod;
+                    break;
+                }
+            }
+        }
+
+        if (method == null) { // Looking for interfaces' methods
+            for (Method innerMethod : pageClass.getMethods()) {
+                if (innerMethod.getName().equals(route.getAction()) && innerMethod.isDefault()) {
+                    method = innerMethod;
+                    break;
+                }
             }
         }
 
@@ -119,7 +126,18 @@ public class FrontServlet extends HttpServlet {
         Map<String, Object> view = new HashMap<>();
         method.setAccessible(true);
         try {
-            method.invoke(page, request, view);
+            List<Object> params = new ArrayList<>();
+            for (Class<?> param : method.getParameterTypes()) {
+                if (param.equals(Map.class)) {
+                    params.add(view);
+                } else if (param.equals(HttpServletRequest.class)) {
+                    params.add(request);
+                } else {
+                    throw new ServletException("Unknown parameter in method [pageClass="
+                            + pageClass + ", method=" + method + "]");
+                }
+            }
+            method.invoke(page, params.toArray(new Object[0]));
         } catch (IllegalAccessException e) {
             throw new ServletException("Can't invoke action method [pageClass="
                     + pageClass + ", method=" + method + "]");
@@ -135,7 +153,27 @@ public class FrontServlet extends HttpServlet {
             }
         }
 
-        Template template = newTemplate(pageClass.getSimpleName() + ".ftlh");
+        String lang = request.getParameter("lang");
+        if (lang != null && validateLang(lang)) {
+            request.getSession().setAttribute("lang", lang);
+        } else {
+            if (lang != null) {
+                getServletContext().log("Invalid value for parameter [lang=" + lang + "]");
+            }
+            lang = (String) request.getSession().getAttribute("lang");
+        }
+
+        Template template = null;
+        try {
+            String suffix = "en".equals(lang) ? "" : "_" + lang;
+            template = newTemplate(pageClass.getSimpleName() + suffix + ".ftlh");
+        } catch (ServletException e) {
+            getServletContext().log(e.getMessage(), e);
+        } finally {
+            if (template == null) {
+                template = newTemplate(pageClass.getSimpleName() + ".ftlh");
+            }
+        }
         response.setContentType("text/html");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         try {
@@ -146,6 +184,10 @@ public class FrontServlet extends HttpServlet {
                         + pageClass + ", action=" + method + "]", e);
             }
         }
+    }
+
+    private boolean validateLang(String lang) {
+        return lang.length() == 2 && lang.chars().allMatch(Character::isLowerCase);
     }
 
     private Template newTemplate(String templateName) throws ServletException {
