@@ -9,9 +9,13 @@ public interface UserRepository {
 
     User findByLogin(String login);
 
-    User findByLoginAndPasswordSha(String login, String passwordSha);
+    User findByEmail(String email);
+
+    User findByLoginOrEmailAndPasswordSha(String loginOrEmail, String passwordSha);
 
     List<User> findAll();
+
+    long findCount();
 
     void save(User user, String passwordSha);
 }

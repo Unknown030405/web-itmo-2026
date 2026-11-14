@@ -1,0 +1,25 @@
+.article-form textarea {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.article {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.article-title {
+    margin: 0 0 0.5rem;
+}
+
+.article-meta {
+    color: var(--caption-color);
+    font-size: 0.8rem;
+}
+
+.article-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

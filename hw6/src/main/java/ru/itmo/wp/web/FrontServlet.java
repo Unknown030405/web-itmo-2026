@@ -3,13 +3,13 @@ package ru.itmo.wp.web;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import freemarker.template.*;
-import ru.itmo.wp.model.domain.User;
 import ru.itmo.wp.model.exception.ValidationException;
 import ru.itmo.wp.web.annotation.Json;
 import ru.itmo.wp.web.exception.NotFoundException;
 import ru.itmo.wp.web.exception.RedirectException;
 import ru.itmo.wp.web.page.IndexPage;
 import ru.itmo.wp.web.page.NotFoundPage;
+import ru.itmo.wp.web.page.Page;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -126,6 +126,9 @@ public class FrontServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             throw new NotFoundException();
         }
+        if (!Page.class.isAssignableFrom(pageClass)) {
+            throw new NotFoundException();
+        }
 
         Method method = null;
         for (Class<?> clazz = pageClass; method == null && clazz != null; clazz = clazz.getSuperclass()) {
@@ -145,43 +148,46 @@ public class FrontServlet extends HttpServlet {
         boolean json = method.getAnnotation(Json.class) != null
                 || (acceptRequestHeader != null && acceptRequestHeader.startsWith(APPLICATION_JSON_MIME_TYPE));
 
-        Object page;
+        Page page;
         try {
             //noinspection deprecation
-            page = pageClass.newInstance();
+            page = (Page) pageClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ServletException("Can't create page [pageClass=" + pageClass + "].", e);
         }
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         Map<String, Object> view = new HashMap<>();
-        putUser(request, view);
 
         try {
-            method.setAccessible(true);
-            method.invoke(page, request, view);
+            page.before(request, view);
+            try {
+                method.setAccessible(true);
+                method.invoke(page, request, view);
+            } finally {
+                page.after(request, view);
+            }
+        } catch (RedirectException e) {
+            redirect(response, view, json, e);
+            return;
         } catch (IllegalAccessException e) {
             throw new ServletException("Unable to run action [pageClass=" + pageClass + ", method=" + method + "].", e);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof RedirectException) {
-                RedirectException redirectException = (RedirectException) cause;
-                if (json) {
-                    view.put("redirect", redirectException.getLocation());
-                    writeJson(response, view);
-                } else {
-                    response.sendRedirect(redirectException.getLocation());
-                }
+                redirect(response, view, json, (RedirectException) cause);
                 return;
             } else if (cause instanceof ValidationException) {
                 ValidationException validationException = (ValidationException) cause;
 
                 view.put("error", validationException.getMessage());
-                for (Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
-                    String key = param.getKey();
-                    if (param.getValue() != null && param.getValue().length == 1) {
-                        String value = param.getValue()[0];
-                        view.put(key, value);
+                if (!json) {
+                    for (Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
+                        String key = param.getKey();
+                        if (!"password".equals(key) && !"passwordConfirmation".equals(key)
+                                && param.getValue() != null && param.getValue().length == 1) {
+                            view.put(key, param.getValue()[0]);
+                        }
                     }
                 }
             } else {
@@ -207,10 +213,13 @@ public class FrontServlet extends HttpServlet {
         response.getWriter().print(new Gson().toJson(view));
     }
 
-    private void putUser(HttpServletRequest request, Map<String, Object> view) {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user != null) {
-            view.put("user", user);
+    private void redirect(HttpServletResponse response, Map<String, Object> view,
+                          boolean json, RedirectException exception) throws IOException {
+        if (json) {
+            view.put("redirect", exception.getLocation());
+            writeJson(response, view);
+        } else {
+            response.sendRedirect(exception.getLocation());
         }
     }
 

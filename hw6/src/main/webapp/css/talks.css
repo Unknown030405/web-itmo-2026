@@ -1,0 +1,15 @@
+.talks select,
+.talks textarea {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.talks.datatable {
+    margin-top: 2rem;
+}
+
+.talks .message-text {
+    text-align: left;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

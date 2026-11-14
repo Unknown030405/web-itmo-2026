@@ -1,5 +1,6 @@
 <#-- @ftlvariable name="user" type="ru.itmo.wp.model.domain.User" -->
 <#-- @ftlvariable name="message" type="java.lang.String" -->
+<#-- @ftlvariable name="userCount" type="java.lang.Long" -->
 <#macro page>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,11 +11,13 @@
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link rel="stylesheet" type="text/css" href="/css/form.css">
     <link rel="stylesheet" type="text/css" href="/css/datatable.css">
+    <link rel="stylesheet" type="text/css" href="/css/talks.css">
+    <link rel="stylesheet" type="text/css" href="/css/articles.css">
     <script src="/js/jquery-3.6.1.min.js"></script>
     <script src="/js/notify.min.js"></script>
     <script src="/js/app.js"></script>
 </head>
-<body>
+<body<#if message??> data-message="${message}"</#if>>
 <header>
     <a href="/index"><img src="/img/logo.png" alt="Codeforces" title="Codeforces"/></a>
     <div class="languages">
@@ -36,6 +39,9 @@
         <ul>
             <li><a href="/index">Home</a></li>
             <li><a href="/users">Users</a></li>
+            <#if user??><li><a href="/talks">Talks</a></li></#if>
+            <#if user??><li><a href="/article">Create article</a></li></#if>
+            <#if user??><li><a href="/myArticles">My articles</a></li></#if>
         </ul>
     </nav>
 </header>
@@ -59,15 +65,8 @@
     </main>
 </div>
 <footer>
-    <a href="/index">Codeforces</a> &copy; by Mike Mirzayanov
+    <a href="/index">Codeforces</a> &copy; by Mike Mirzayanov | Users: ${userCount}
 </footer>
-<#if message??>
-<script>
-    $(function () {
-        notify("${message?js_string}");
-    });
-</script>
-</#if>
 </body>
 </html>
 </#macro>

@@ -3,19 +3,22 @@ package ru.itmo.wp.model.service;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import ru.itmo.wp.model.domain.User;
+import ru.itmo.wp.model.exception.RepositoryException;
 import ru.itmo.wp.model.exception.ValidationException;
 import ru.itmo.wp.model.repository.UserRepository;
 import ru.itmo.wp.model.repository.impl.UserRepositoryImpl;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.List;
 
 public class UserService {
     private static final String PASSWORD_SALT = "1174f9d7bc21e00e9a5fd0a783a44c9a9f73413c";
 
     private final UserRepository userRepository = new UserRepositoryImpl();
+    private final RoleService roleService = new RoleService();
 
-    public void validateRegistration(User user, String password) throws ValidationException {
+    public void validateRegistration(User user, String password, String passwordConfirmation) throws ValidationException {
         if (Strings.isNullOrEmpty(user.getLogin())) {
             throw new ValidationException("Login is required");
         }
@@ -29,6 +32,24 @@ public class UserService {
             throw new ValidationException("Login is already in use");
         }
 
+        if (Strings.isNullOrEmpty(user.getEmail())) {
+            throw new ValidationException("Email is required");
+        }
+        String email = user.getEmail().trim().toLowerCase();
+        if (email.isEmpty()) {
+            throw new ValidationException("Email is required");
+        }
+        if (email.length() > 255) {
+            throw new ValidationException("Email can't be longer than 255 characters");
+        }
+        if (!email.matches("[a-z0-9+_.-]+@[a-z0-9-]+(\\.[a-z0-9-]+)+")) {
+            throw new ValidationException("Invalid email format");
+        }
+        user.setEmail(email);
+        if (userRepository.findByEmail(email) != null) {
+            throw new ValidationException("Email is already in use");
+        }
+
         if (Strings.isNullOrEmpty(password)) {
             throw new ValidationException("Password is required");
         }
@@ -38,30 +59,43 @@ public class UserService {
         if (password.length() > 64) {
             throw new ValidationException("Password can't be longer than 64 characters");
         }
+        if (!password.equals(passwordConfirmation)) {
+            throw new ValidationException("Passwords do not match");
+        }
     }
 
-    public void register(User user, String password) {
-        userRepository.save(user, getPasswordSha(password));
+    public void register(User user, String password) throws ValidationException {
+        try {
+            userRepository.save(user, getPasswordSha(password));
+        } catch (RepositoryException e) {
+            if (e.getCause() instanceof SQLException && "23000".equals(((SQLException) e.getCause()).getSQLState())) {
+                throw new ValidationException("Login or email is already in use");
+            }
+            throw e;
+        }
+        roleService.assignDefaultRole(user.getId());
     }
 
-    public void validateEnter(String login, String password) throws ValidationException {
-        if (Strings.isNullOrEmpty(login)) {
-            throw new ValidationException("Login is required");
+    public User validateEnter(String loginOrEmail, String password) throws ValidationException {
+        if (Strings.isNullOrEmpty(loginOrEmail)) {
+            throw new ValidationException("Login or email is required");
         }
         if (Strings.isNullOrEmpty(password)) {
             throw new ValidationException("Password is required");
         }
-        if (findByLoginAndPassword(login, password) == null) {
-            throw new ValidationException("Invalid login or password");
+        User user = userRepository.findByLoginOrEmailAndPasswordSha(loginOrEmail, getPasswordSha(password));
+        if (user == null) {
+            throw new ValidationException("Invalid login/email or password");
         }
-    }
-
-    public User findByLoginAndPassword(String login, String password) {
-        return userRepository.findByLoginAndPasswordSha(login, getPasswordSha(password));
+        return user;
     }
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public long findCount() {
+        return userRepository.findCount();
     }
 
     private String getPasswordSha(String password) {
